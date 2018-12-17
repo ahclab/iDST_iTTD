@@ -10,6 +10,7 @@ numpy = "*"
 jupyter = "*"
 tqdm = "*"
 torch = "*"
+wget = "*"
 
 [requires]
 python_version = "3.6"
