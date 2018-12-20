@@ -1,7 +1,7 @@
 from idst_util import trivial
-from pprint import pprint
 from tqdm import tqdm
 import os
+import copy
 import wget
 import tarfile
 import json
@@ -68,7 +68,7 @@ def check(path = "."):
             os.remove(os.path.join(path, file_name))
     logging.info("Done!")
 
-def extract_raw_features(data_directory, flist):
+def extract_raw_features(data_directory, flist, data_augmentation = False):
     X = []
     Y = []
     for dialog_path in tqdm(flist):
@@ -80,8 +80,14 @@ def extract_raw_features(data_directory, flist):
         with open(log_json_path, "r") as log_json_file, open(label_json_path, "r") as label_json_file:
             log_json = json.load(log_json_file)
             label_json = json.load(label_json_file)
+            
         X_dialog_turns = []
         Y_dialog_turns = []
+        
+        # LecTreck: 3.2.2 Including Transcriptions in Training Data
+        X_dialog_turns_augmented = []
+        Y_dialog_turns_augmented = []
+        
         for log_turn, label_turn in zip(log_json["turns"], label_json["turns"]):
             
             # X_turn
@@ -102,8 +108,8 @@ def extract_raw_features(data_directory, flist):
             asr_hyps = log_turn["input"]["live"]["asr-hyps"]
             asr_hyp = asr_hyps[0]["asr-hyp"]
             asr_score = asr_hyps[0]["score"]
-            for asr_word in asr_hyp.split():
-                X_dialog_turn["user"].append((asr_word, asr_score))
+            for asr_token in asr_hyp.split():
+                X_dialog_turn["user"].append((asr_token, asr_score))
             X_dialog_turns.append(X_dialog_turn)
             
             # Y_turn
@@ -127,13 +133,34 @@ def extract_raw_features(data_directory, flist):
             
             assert len(X_dialog_turns) == len(Y_dialog_turns)
             
+            # LecTreck: 3.2.2 Including Transcriptions in Training Data 
+            if data_augmentation:
+                X_dialog_turn_augmented = copy.deepcopy(X_dialog_turn)
+                Y_dialog_turn_augmented = copy.deepcopy(Y_dialog_turn)
+                X_dialog_turn_augmented["user"] = []
+                transcription = label_turn["transcription"]
+                for transcription_token in transcription.split():
+                    X_dialog_turn_augmented["user"].append((transcription_token, 1))
+                X_dialog_turns_augmented.append(X_dialog_turn_augmented)
+                Y_dialog_turns_augmented.append(Y_dialog_turn_augmented)
+            
+            # LecTreck: 3.2.2 Including Transcriptions in Training Data
+            if data_augmentation:
+                assert len(X_dialog_turns_augmented) == len(Y_dialog_turns_augmented)
+                assert len(X_dialog_turns) == len(X_dialog_turns_augmented)
+            
         X.append(X_dialog_turns)
         Y.append(Y_dialog_turns)
+        
+        # LecTreck: 3.2.2 Including Transcriptions in Training Data
+        if data_augmentation:
+            X.append(X_dialog_turns_augmented)
+            Y.append(Y_dialog_turns_augmented)
         
     return X, Y        
 
 
-def retrieve_raw_datasets():
+def retrieve_raw_datasets(train_data_augmentation = False):
     logging.info("+--------------------------------+")
     logging.info("|     Dialog State Tracker 2     |")
     logging.info("|       Dataset Retrieval        |")
@@ -162,11 +189,14 @@ def retrieve_raw_datasets():
     
     # TRAIN
     logging.info("Extracting raw train features")
-    X_train, Y_train = extract_raw_features(data_directory = traindev_data_directory, flist = train_flist)    
+    X_train, Y_train = extract_raw_features(data_directory = traindev_data_directory,
+                                            flist = train_flist,
+                                            data_augmentation = train_data_augmentation)    
     
     # DEV
     logging.info("Extracting raw dev features")
-    X_dev, Y_dev = extract_raw_features(data_directory = traindev_data_directory, flist = dev_flist)
+    X_dev, Y_dev = extract_raw_features(data_directory = traindev_data_directory,
+                                        flist = dev_flist)
     
     # TEST
     logging.info("Reading dstc2_test.flist")
@@ -180,6 +210,7 @@ def retrieve_raw_datasets():
     assert len(test_flist) == 1117 #according to handbook
     logging.info("Asserted 1117 dialogs for dstc2_test.flist")
     logging.info("Extracting raw test features")
-    X_test, Y_test = extract_raw_features(data_directory = test_data_directory, flist = test_flist)
+    X_test, Y_test = extract_raw_features(data_directory = test_data_directory,
+                                          flist = test_flist)
  
     return X_train, Y_train, X_dev, Y_dev, X_test, Y_test, dstc2_ontology
