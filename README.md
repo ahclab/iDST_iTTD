@@ -14,3 +14,17 @@ A Dialog State Tracker (DST) is an important component in modern spoken dialog s
 | virtualenv-clone | 0.4.0      |
 
 ### Repository contents
+
+* 📁 idst_util
+
+	* `dstc_util.py`: checks if dstc2 dataset is in root folder, otherwise it downloads it. It provides also a raw features extractor
+	* `trivial.py`: logs some trivial strings
+
+* 📁 resources
+	
+	* 📁 images: some images for the Markdown files
+	* 📁 papers: relevant papers with summary
+
+* `[LecTrack]baseline.ipynb`: PyTorch implementation of LecTrack as baseline
+
+* `dstc2_data_analysis.ipynb`: data analysis of DSTC2 dataset
