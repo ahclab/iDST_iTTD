@@ -11,6 +11,7 @@ jupyter = "*"
 tqdm = "*"
 torch = "*"
 wget = "*"
+plotly = "*"
 
 [requires]
 python_version = "3.6"
