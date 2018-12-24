@@ -12,6 +12,8 @@ tqdm = "*"
 torch = "*"
 wget = "*"
 plotly = "*"
+python2 = "*"
+nltk = "*"
 
 [requires]
 python_version = "3.6"

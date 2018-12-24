@@ -5,6 +5,8 @@ import copy
 import wget
 import tarfile
 import json
+import nltk
+nltk.download("punkt")
 import logging
 logging.getLogger().setLevel(logging.INFO)
 
@@ -80,13 +82,21 @@ def extract_raw_features(data_directory, flist, data_augmentation = False):
         with open(log_json_path, "r") as log_json_file, open(label_json_path, "r") as label_json_file:
             log_json = json.load(log_json_file)
             label_json = json.load(label_json_file)
-            
-        X_dialog_turns = []
-        Y_dialog_turns = []
+        
+        X_dialog = {}
+        X_dialog["session-id"] = log_json["session-id"]
+        X_dialog["turns"] = []
+        Y_dialog = {}
+        Y_dialog["session-id"] = log_json["session-id"]
+        Y_dialog["turns"] = []
         
         # LecTreck: 3.2.2 Including Transcriptions in Training Data
-        X_dialog_turns_augmented = []
-        Y_dialog_turns_augmented = []
+        X_dialog_augmented = {}
+        X_dialog_augmented["session-id"] = log_json["session-id"]
+        X_dialog_augmented["turns"] = []
+        Y_dialog_augmented = {}
+        Y_dialog_augmented["session-id"] = log_json["session-id"]
+        Y_dialog_augmented["turns"] = []
         
         for log_turn, label_turn in zip(log_json["turns"], label_json["turns"]):
             
@@ -98,19 +108,19 @@ def extract_raw_features(data_directory, flist, data_augmentation = False):
             for dialog_act in log_turn["output"]["dialog-acts"]:
                 act = dialog_act["act"]
                 slots = dialog_act["slots"]
-                X_dialog_turn["system"].append((act, 1))
+                X_dialog_turn["system"].append((act, 0))
                 if len(slots) != 0:
                     for slot_element in slots[0]:
                         slot_element = str(slot_element) # this is for the count in test
-                        for slot_value in slot_element.split():
+                        for slot_value in nltk.word_tokenize(slot_element):
                             X_dialog_turn["system"].append((slot_value, 1))
             # X_turn: asr-hyps
             asr_hyps = log_turn["input"]["live"]["asr-hyps"]
             asr_hyp = asr_hyps[0]["asr-hyp"]
             asr_score = asr_hyps[0]["score"]
-            for asr_token in asr_hyp.split():
+            for asr_token in nltk.word_tokenize(asr_hyp):
                 X_dialog_turn["user"].append((asr_token, asr_score))
-            X_dialog_turns.append(X_dialog_turn)
+            X_dialog["turns"].append(X_dialog_turn)
             
             # Y_turn
             Y_dialog_turn = {}
@@ -129,9 +139,9 @@ def extract_raw_features(data_directory, flist, data_augmentation = False):
             Y_dialog_turn["goal"]["pricerange"] = label_turn["goal-labels"].get("pricerange", None)
             Y_dialog_turn["goal"]["name"] = label_turn["goal-labels"].get("name", None)
             Y_dialog_turn["goal"]["area"] = label_turn["goal-labels"].get("area", None)
-            Y_dialog_turns.append(Y_dialog_turn)
+            Y_dialog["turns"].append(Y_dialog_turn)
             
-            assert len(X_dialog_turns) == len(Y_dialog_turns)
+            assert len(X_dialog["turns"]) == len(Y_dialog["turns"])
             
             # LecTreck: 3.2.2 Including Transcriptions in Training Data 
             if data_augmentation:
@@ -139,23 +149,23 @@ def extract_raw_features(data_directory, flist, data_augmentation = False):
                 Y_dialog_turn_augmented = copy.deepcopy(Y_dialog_turn)
                 X_dialog_turn_augmented["user"] = []
                 transcription = label_turn["transcription"]
-                for transcription_token in transcription.split():
-                    X_dialog_turn_augmented["user"].append((transcription_token, 1))
-                X_dialog_turns_augmented.append(X_dialog_turn_augmented)
-                Y_dialog_turns_augmented.append(Y_dialog_turn_augmented)
+                for transcription_token in nltk.word_tokenize(transcription):
+                    X_dialog_turn_augmented["user"].append((transcription_token, 0))
+                X_dialog_augmented["turns"].append(X_dialog_turn_augmented)
+                Y_dialog_augmented["turns"].append(Y_dialog_turn_augmented)
             
             # LecTreck: 3.2.2 Including Transcriptions in Training Data
             if data_augmentation:
-                assert len(X_dialog_turns_augmented) == len(Y_dialog_turns_augmented)
-                assert len(X_dialog_turns) == len(X_dialog_turns_augmented)
+                assert len(X_dialog_augmented["turns"]) == len(Y_dialog_augmented["turns"])
+                assert len(X_dialog["turns"]) == len(X_dialog_augmented["turns"])
             
-        X.append(X_dialog_turns)
-        Y.append(Y_dialog_turns)
+        X.append(X_dialog)
+        Y.append(Y_dialog)
         
         # LecTreck: 3.2.2 Including Transcriptions in Training Data
         if data_augmentation:
-            X.append(X_dialog_turns_augmented)
-            Y.append(Y_dialog_turns_augmented)
+            X.append(X_dialog_augmented)
+            Y.append(Y_dialog_augmented)
         
     return X, Y        
 
