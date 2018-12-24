@@ -110,10 +110,11 @@ def extract_raw_features(data_directory, flist, data_augmentation = False):
                 slots = dialog_act["slots"]
                 X_dialog_turn["system"].append((act, 0))
                 if len(slots) != 0:
-                    for slot_element in slots[0]:
-                        slot_element = str(slot_element) # this is for the count in test
-                        for slot_value in nltk.word_tokenize(slot_element):
-                            X_dialog_turn["system"].append((slot_value, 1))
+                    for slot in slots:
+                        for slot_element in slot:
+                            slot_element = str(slot_element) # this is for the count in test
+                            for slot_value in nltk.word_tokenize(slot_element):
+                                X_dialog_turn["system"].append((slot_value, 0))
             # X_turn: asr-hyps
             asr_hyps = log_turn["input"]["live"]["asr-hyps"]
             asr_hyp = asr_hyps[0]["asr-hyp"]
