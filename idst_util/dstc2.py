@@ -70,7 +70,7 @@ def check(path = "."):
             os.remove(os.path.join(path, file_name))
     logging.info("Done!")
 
-def extract_raw_features(data_directory, flist, data_augmentation = False):
+def extract_raw_features(data_directory, flist, ontology, data_augmentation = False):
     X = []
     Y = []
     for dialog_path in tqdm(flist):
@@ -202,11 +202,13 @@ def retrieve_raw_datasets(train_data_augmentation = False):
     logging.info("Extracting raw train features")
     X_train, Y_train = extract_raw_features(data_directory = traindev_data_directory,
                                             flist = train_flist,
+                                            ontology = dstc2_ontology,
                                             data_augmentation = train_data_augmentation)    
     
     # DEV
     logging.info("Extracting raw dev features")
     X_dev, Y_dev = extract_raw_features(data_directory = traindev_data_directory,
+                                        ontology = dstc2_ontology,
                                         flist = dev_flist)
     
     # TEST
@@ -222,6 +224,7 @@ def retrieve_raw_datasets(train_data_augmentation = False):
     logging.info("Asserted 1117 dialogs for dstc2_test.flist")
     logging.info("Extracting raw test features")
     X_test, Y_test = extract_raw_features(data_directory = test_data_directory,
+                                          ontology = dstc2_ontology,
                                           flist = test_flist)
  
     return X_train, Y_train, X_dev, Y_dev, X_test, Y_test, dstc2_ontology
