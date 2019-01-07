@@ -6,6 +6,7 @@ import wget
 import tarfile
 import json
 import nltk
+import numpy as np
 nltk.download("punkt")
 import logging
 logging.getLogger().setLevel(logging.INFO)
@@ -227,4 +228,4 @@ def retrieve_raw_datasets(train_data_augmentation = False):
                                           ontology = dstc2_ontology,
                                           flist = test_flist)
  
-    return X_train, Y_train, X_dev, Y_dev, X_test, Y_test, dstc2_ontology
+    return np.array(X_train), np.array(Y_train), np.array(X_dev), np.array(Y_dev), np.array(X_test), np.array(Y_test), dstc2_ontology
