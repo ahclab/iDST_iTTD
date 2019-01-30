@@ -91,7 +91,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
         Y_dialog["session-id"] = log_json["session-id"]
         Y_dialog["turns"] = []
         
-        # LecTreck: 3.2.2 Including Transcriptions in Training Data
+        # LecTrack: 3.2.2 Including Transcriptions in Training Data
         X_dialog_augmented = {}
         X_dialog_augmented["session-id"] = log_json["session-id"]
         X_dialog_augmented["turns"] = []
@@ -145,7 +145,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
             
             assert len(X_dialog["turns"]) == len(Y_dialog["turns"])
             
-            # LecTreck: 3.2.2 Including Transcriptions in Training Data 
+            # LecTrack: 3.2.2 Including Transcriptions in Training Data 
             if data_augmentation:
                 X_dialog_turn_augmented = copy.deepcopy(X_dialog_turn)
                 Y_dialog_turn_augmented = copy.deepcopy(Y_dialog_turn)
@@ -156,7 +156,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
                 X_dialog_augmented["turns"].append(X_dialog_turn_augmented)
                 Y_dialog_augmented["turns"].append(Y_dialog_turn_augmented)
             
-            # LecTreck: 3.2.2 Including Transcriptions in Training Data
+            # LecTrack: 3.2.2 Including Transcriptions in Training Data
             if data_augmentation:
                 assert len(X_dialog_augmented["turns"]) == len(Y_dialog_augmented["turns"])
                 assert len(X_dialog["turns"]) == len(X_dialog_augmented["turns"])
@@ -164,7 +164,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
         X.append(X_dialog)
         Y.append(Y_dialog)
         
-        # LecTreck: 3.2.2 Including Transcriptions in Training Data
+        # LecTrack: 3.2.2 Including Transcriptions in Training Data
         if data_augmentation:
             X.append(X_dialog_augmented)
             Y.append(Y_dialog_augmented)
