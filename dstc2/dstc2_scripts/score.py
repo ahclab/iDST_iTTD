@@ -3,8 +3,12 @@ import misc
 from collections import defaultdict
 import traceback
 
-SCHEDULES = [1,2]
-LABEL_SCHEMES = ["a","b"]
+# EDIT START
+#SCHEDULES = [1,2]
+#LABEL_SCHEMES = ["a","b"]
+SCHEDULES = [2]
+LABEL_SCHEMES = ["a"]
+# EDIT END
 EPS = 0.00001
 
 def main(argv):
@@ -43,7 +47,10 @@ def main(argv):
     
     # what stats are there?
     stats = []
-    stat_classes = [Stat_Accuracy, Stat_Probs, Stat_MRR, Stat_Updates, Stat_ROC]
+    # EDIT START
+    #stat_classes = [Stat_Accuracy, Stat_Probs, Stat_MRR, Stat_Updates, Stat_ROC]
+    stat_classes = [Stat_Accuracy, Stat_Probs]
+    # EDIT END
     
     for schedule in SCHEDULES:
         for label_scheme in LABEL_SCHEMES:

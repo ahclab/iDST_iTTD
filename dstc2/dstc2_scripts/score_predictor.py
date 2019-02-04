@@ -3,8 +3,12 @@ import misc
 from collections import defaultdict
 import traceback
 
-SCHEDULES = [1,2]
-LABEL_SCHEMES = ["a","b"]
+# EDIT START
+#SCHEDULES = [1,2]
+#LABEL_SCHEMES = ["a","b"]
+SCHEDULES = [2]
+LABEL_SCHEMES = ["a"]
+# EDIT END
 EPS = 0.00001
 
 def main(argv):
@@ -43,7 +47,10 @@ def main(argv):
     
     # what stats are there?
     stats = []
-    stat_classes = [Stat_Accuracy, Stat_Probs, Stat_MRR, Stat_Updates, Stat_ROC]
+    # EDIT START
+    #stat_classes = [Stat_Accuracy, Stat_Probs, Stat_MRR, Stat_Updates, Stat_ROC]
+    stat_classes = [Stat_Accuracy]
+    # EDIT END
     
     for schedule in SCHEDULES:
         for label_scheme in LABEL_SCHEMES:
@@ -72,26 +79,21 @@ def main(argv):
     
     turn_counter = 0.0
     
-    # EDIT COMMENTED THE FOLLOWING LINE
-    #for session_num, (session_tracker, session) in enumerate(zip(tracker_output['sessions'], sessions)):
-    for session_num, session_tracker in enumerate(tracker_output['sessions']):
+    # EDIT START
+    temp_session_list = []
+    for tracker_session in tracker_output["sessions"]:
+        for session in sessions.session_list:
+            if session.split("/")[1] == tracker_session["session-id"]:
+                temp_session_list.append(session)
+    sessions.session_list = temp_session_list
+    # EDIT END
     
+    for session_num, (session_tracker, session) in enumerate(zip(tracker_output['sessions'], sessions)):
         
       for _, _, stat_class in stats:
           stat_class.newDialog()
-      
-      # EDIT START
-      session = None
-
-      for sess in sessions:
-        if sess.log["session-id"] == session_tracker["session-id"]:
-            session = sess
-            break
-
-      assert session != None
 
       session_id = session.log['session-id']
-      # EDIT END
     
       try:
         
