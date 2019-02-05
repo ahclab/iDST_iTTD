@@ -5,9 +5,7 @@ import copy
 import wget
 import tarfile
 import json
-import nltk
 import numpy as np
-nltk.download("punkt")
 import logging
 logging.getLogger().setLevel(logging.INFO)
 
@@ -121,7 +119,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
                         for slot_element in slot:
                             slot_element = str(slot_element) # this is for the count in test. Check handbook for detail
                             if tokenize_slot_element:
-                                for slot_value in nltk.word_tokenize(slot_element):
+                                for slot_value in slot_element.split(" "):
                                     X_dialog_turn["system"].append((slot_value, weight))
                             else:
                                 X_dialog_turn["system"].append((slot_element, weight))
@@ -131,7 +129,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
             asr_hyps = log_turn["input"]["live"]["asr-hyps"]
             asr_hyp = asr_hyps[0]["asr-hyp"]
             asr_score = asr_hyps[0]["score"] # take ASR 1-best
-            for asr_token in nltk.word_tokenize(asr_hyp):
+            for asr_token in asr_hyp.split(" "):
                 X_dialog_turn["user"].append((asr_token, asr_score))
                 
             X_dialog["turns"].append(X_dialog_turn)
@@ -166,7 +164,7 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
                 Y_dialog_turn_augmented = copy.deepcopy(Y_dialog_turn)
                 #X_dialog_turn_augmented["user"] = [] # Uncomment this to erase user ASR hypothesis so far and keep only the true transcription
                 transcription = label_turn["transcription"]
-                for transcription_token in nltk.word_tokenize(transcription):
+                for transcription_token in transcription.split(" "):
                     X_dialog_turn_augmented["user"].append((transcription_token, weight))
                 X_dialog_augmented["turns"].append(X_dialog_turn_augmented)
                 Y_dialog_augmented["turns"].append(Y_dialog_turn_augmented)
