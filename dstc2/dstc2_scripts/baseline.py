@@ -1,4 +1,5 @@
-import  argparse, dataset_walker, json, time, copy
+import  argparse, json, time, copy
+from . import dataset_walker
 from collections import defaultdict
 
 

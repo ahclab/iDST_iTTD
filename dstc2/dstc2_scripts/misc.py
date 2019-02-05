@@ -1,5 +1,5 @@
 from collections import defaultdict
-import baseline
+from . import baseline
 import json
 
 slots_informable = ["area","food","pricerange","name", "hastv", "hasinternet", "childrenallowed", "near", "hasmusic", "type"]

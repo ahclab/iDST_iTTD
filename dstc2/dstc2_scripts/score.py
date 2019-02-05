@@ -1,5 +1,5 @@
 import sys,os,argparse,shutil,glob,json,pprint,math
-import misc
+from . import misc
 from collections import defaultdict
 import traceback
 
