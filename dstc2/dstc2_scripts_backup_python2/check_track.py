@@ -6,7 +6,7 @@ def main(argv):
     utils_dirname = os.path.join(install_path,'lib')
 
     sys.path.append(utils_dirname)
-    from .dataset_walker import dataset_walker
+    from dataset_walker import dataset_walker
     
     parser = argparse.ArgumentParser(description='Check the validity of a tracker output object.')
     parser.add_argument('--dataset', dest='dataset', action='store', metavar='DATASET', required=True,
@@ -84,7 +84,7 @@ class TrackChecker():
                     self.add_error((session_id, "turn", turn_num), "no requested-slots key in turn")
                 else :
                     # check requested-slots
-                    for slot, p in list(tracker_turn["requested-slots"].items()):
+                    for slot, p in tracker_turn["requested-slots"].items():
                         if slot not in self.ontology["requestable"] :
                             self.add_error((session_id, "turn", turn_num, "requested-slots", slot),
                                 "do not recognise requested slot"
@@ -103,7 +103,7 @@ class TrackChecker():
                     self.add_error((session_id, "turn", turn_num), "no goal-labels key in turn")
                 else :
                     # check goal-labels
-                    for slot, dist in list(tracker_turn["goal-labels"].items()):
+                    for slot, dist in tracker_turn["goal-labels"].items():
                         if slot not in self.ontology["informable"] :
                             self.add_error((session_id, "turn", turn_num, "goal-labels", slot),
                                 "do not recognise slot"
@@ -141,7 +141,7 @@ class TrackChecker():
                         
             
     def _check_distribution(self, context, d, valid_values=None) :
-        for key, score in list(d.items()):
+        for key, score in d.items():
             if score < 0.0 :
                 self.add_error(context+("value",key), "should not be negative")
             elif score > 1.00000001 :
@@ -150,7 +150,7 @@ class TrackChecker():
         if total_p > 1.000001 :
             self.add_error(context+("total score",), "should not be > 1.0")
         if valid_values != None :
-            for value in list(d.keys()):
+            for value in d.keys():
                 if value not in valid_values :
                     self.add_error(context+("value",value), "do not recognise value")
         
@@ -163,11 +163,11 @@ class TrackChecker():
     
     def print_errors(self):
         if len(self.errors) == 0 :
-            print("Found no errors, trackfile is valid")
+            print "Found no errors, trackfile is valid"
         else :
-            print("Found",len(self.errors),"errors:")
+            print "Found",len(self.errors),"errors:"
         for context, error in self.errors:
-            print(" ".join(map(str, context)), "-", error)
+            print " ".join(map(str, context)), "-", error
         
     
     

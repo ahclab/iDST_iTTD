@@ -141,8 +141,8 @@ class Tracker(object):
         goal_stats = defaultdict(lambda : defaultdict(float))
         prev_method = "none"
         
-        if len(list(hyps["method-label"].keys()))> 0 :
-            prev_method = list(hyps["method-label"].keys())[0]
+        if len(hyps["method-label"].keys())> 0 :
+            prev_method = hyps["method-label"].keys()[0]
         for score, uact in slu_hyps :
             informed_goals, denied_goals, requested, method = labels(uact, mact)
             # requested
@@ -160,7 +160,7 @@ class Tracker(object):
         for slot in goal_stats:
             curr_score = 0.0
             if (slot in hyps["goal-labels"]) :
-                curr_score = list(hyps["goal-labels"][slot].values())[0]
+                curr_score = hyps["goal-labels"][slot].values()[0]
             for value in goal_stats[slot]:
                 score = goal_stats[slot][value]
                 if score >= curr_score :
@@ -172,7 +172,7 @@ class Tracker(object):
         # joint estimate is the above selection, with geometric mean score
         goal_joint_label = {"slots":{}, "scores":[]}
         for slot in  hyps["goal-labels"] :
-            (value,score), = list(hyps["goal-labels"][slot].items())
+            (value,score), = hyps["goal-labels"][slot].items()
             if score < 0.5 :
                 # then None is more likely
                 continue
@@ -225,7 +225,7 @@ class FocusTracker(object):
             for slot in informed_goals:
                 this_u[slot][informed_goals[slot]] += score
                         
-        for slot in list(this_u.keys()) + list(hyps["goal-labels"].keys()) :
+        for slot in this_u.keys() + hyps["goal-labels"].keys() :
             q = max(0.0,1.0-sum([this_u[slot][value] for value in this_u[slot]])) # clipping at zero because rounding errors
             if slot not in hyps["goal-labels"] :
                 hyps["goal-labels"][slot] = {}
@@ -233,7 +233,7 @@ class FocusTracker(object):
             for value in hyps["goal-labels"][slot] :
                 
                 hyps["goal-labels"][slot][value] *= q
-            prev_values = list(hyps["goal-labels"][slot].keys())
+            prev_values = hyps["goal-labels"][slot].keys()
             for value in this_u[slot] :
                 if value in prev_values :
                     hyps["goal-labels"][slot][value] += this_u[slot][value]
@@ -267,7 +267,7 @@ class FocusTracker(object):
                 for slot,value in act["slots"]:
                     informed_slots.append(slot)
                     
-        for slot in (list(requested_slot_stats.keys()) + list(hyps["requested-slots"].keys())):
+        for slot in (requested_slot_stats.keys() + hyps["requested-slots"].keys()):
             p = requested_slot_stats[slot]
             prev_p = 0.0
             if slot in hyps["requested-slots"] :
@@ -294,7 +294,7 @@ def clip(x) :
 
 
 def normalise_dict(x) :
-    x_items = list(x.items())
+    x_items = x.items()
     total_p = sum([p for k,p in x_items])
     if total_p > 1.0 :
         x_items = [(k,p/total_p) for k,p in x_items]
@@ -324,7 +324,7 @@ def main() :
     elif args.focus.lower() == "false":
         tracker = Tracker()
     else:
-        raise RuntimeError('Dont recognize focus=%s (must be True or False)' % (args.focus))    
+        raise RuntimeError,'Dont recognize focus=%s (must be True or False)' % (args.focus)    
     for call in dataset :
         this_session = {"session-id":call.log["session-id"], "turns":[]}
         tracker.reset()

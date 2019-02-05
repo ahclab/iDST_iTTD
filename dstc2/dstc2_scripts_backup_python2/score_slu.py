@@ -1,8 +1,8 @@
 import sys,os,argparse,shutil,glob,json,pprint,math
 
-from . import misc
+import misc
 from collections import defaultdict
-from . import baseline
+import baseline
 # type, and task are evaluated- shouldn't be.
 
 eps = 0.001 # domain for math.log
@@ -15,7 +15,7 @@ def main(argv):
     utils_dirname = os.path.join(install_path,'lib')
     
     sys.path.append(utils_dirname)
-    from .dataset_walker import dataset_walker
+    from dataset_walker import dataset_walker
     list_dir = os.path.join(install_path,'config')
 
     parser = argparse.ArgumentParser(description='Evaluate output from a belief tracker.')
@@ -64,12 +64,12 @@ def main(argv):
             total_p = sum([x["score"] for x in slu_hyps])
             if total_p > 1.0 :
                 if total_p > 1.00001 :
-                    print("Warning: total_p =",total_p,"> 1.0- renormalising.")
+                    print "Warning: total_p =",total_p,"> 1.0- renormalising."
                 for slu_hyp in slu_hyps:
                     slu_hyp["score"] = slu_hyp["score"]/total_p
             
             
-            for metric in list(metrics.values()):
+            for metric in metrics.values():
                 metric.add_turn(true_label, slu_hyps, log_turn, label)
                 
             # for passing to tracker
@@ -78,7 +78,7 @@ def main(argv):
                     "output":log_turn["output"]
             }
             goal_hyps = tracker.addTurn(this_turn)
-            for belief_metric in list(belief_metrics.values()):
+            for belief_metric in belief_metrics.values():
                 belief_metric.add_turn(goal_hyps, label)
             
             
@@ -96,15 +96,15 @@ def main(argv):
     
     output = []
     
-    for key, metric in list(metrics.items()):
+    for key, metric in metrics.items():
         this_output =  metric.output()
-        for this_key, value in list(this_output.items()):
+        for this_key, value in this_output.items():
             output.append(( key + ","+ this_key, value))
             
-    for key, belief_metric in list(belief_metrics.items()):
+    for key, belief_metric in belief_metrics.items():
         this_output =  belief_metric.output()
         key = "belief_"+key
-        for this_key, value in list(this_output.items()):
+        for this_key, value in this_output.items():
             output.append((key + ","+ this_key, value))
 
     output.sort(key=lambda x:x[0])
@@ -200,14 +200,14 @@ class BeliefAccuracy(object):
                 hyps = goal_hyps["goal-labels"][slot]
             else :
                 hyps = {}
-            hyps = {value:max(0.0,p) for value,p in list(hyps.items())}
+            hyps = {value:max(0.0,p) for value,p in hyps.items()}
             total_p = sum(hyps.values())
             if total_p > 1.0 :
-                hyps = {value: p/total_p for value,p in list(hyps.items())}
+                hyps = {value: p/total_p for value,p in hyps.items()}
                 
             offlist_p = 1.0-total_p
             hyps[None]=offlist_p
-            hyps = list(hyps.items())
+            hyps = hyps.items()
             hyps.sort(key = lambda x:-x[1])
             true_goal = None
             if slot in labels["goal-labels"] :
@@ -233,7 +233,7 @@ class BeliefAccuracy(object):
         
         # method-label
         true_method = labels["method-label"]
-        method_hyps = list(goal_hyps["method-label"].items())
+        method_hyps = goal_hyps["method-label"].items()
         total_p = sum([x[1] for x in method_hyps])
         if total_p < 1.0 :
             method_hyps = [(method, p/total_p) for method,p in method_hyps]

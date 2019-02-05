@@ -9,7 +9,7 @@ def S(turn, ontology=None) :
     if ontology == None :
         _slots_informable = slots_informable[:]
     else :
-        _slots_informable = list(ontology["informable"].keys())
+        _slots_informable = ontology["informable"].keys()
         
     mact = []
     if "dialog-acts" in turn["output"] :
@@ -85,7 +85,7 @@ def LabelsB(session, ontology) :
     # calculate labelling scheme B labels: (for goal and method)
     goal_labels_b = []
     method_labels_b = []
-    slots_informable = list(ontology["informable"].keys())
+    slots_informable = ontology["informable"].keys()
     canthelped = {slot:[] for slot in slots_informable}
     for (log_turn,label_turn) in session :
         user_act = label_turn["semantics"]["json"]

@@ -27,7 +27,7 @@ class dataset_walker(object):
                 #line = re.sub('/',r'\\',line)
                 #line = re.sub(r'\\+$','',line)
                 if (line in self.session_list):
-                    raise RuntimeError('Call appears twice: %s' % (line))
+                    raise RuntimeError,'Call appears twice: %s' % (line)
                 self.session_list.append(line)
             f.close()   
         
@@ -39,7 +39,7 @@ class dataset_walker(object):
             if (self.labels):
                 labels_filename = os.path.join(session_dirname,'label.json')
                 if (not os.path.exists(labels_filename)):
-                    raise RuntimeError('Cant score : cant open labels file %s' % (labels_filename))
+                    raise RuntimeError,'Cant score : cant open labels file %s' % (labels_filename)
             else:
                 labels_filename = None
             call = Call(applog_filename,labels_filename)
@@ -76,9 +76,9 @@ class Call(object):
     
         
 if __name__ == '__main__':
-    from . import misc
+    import misc
     dataset = dataset_walker("HDCCN", dataroot="data", labels=True)
     for call in dataset :
         if call.log["session-id"]=="voip-f32f2cfdae-130328_192703" :
             for turn, label in call :
-                print(misc.S(turn))
+                print misc.S(turn)
