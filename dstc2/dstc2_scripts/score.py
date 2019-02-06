@@ -1,7 +1,9 @@
 import sys,os,argparse,shutil,glob,json,pprint,math
+import traceback
+import numpy as np
 from . import misc
 from collections import defaultdict
-import traceback
+from .dataset_walker import dataset_walker
 
 # EDIT START
 #SCHEDULES = [1,2]
@@ -11,39 +13,14 @@ LABEL_SCHEMES = ["a"]
 # EDIT END
 EPS = 0.00001
 
-def main(argv):
+def compute_score(dataset, dataroot, tracker_output, ontology):
     
-    install_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    utils_dirname = os.path.join(install_path,'lib')
-
-    sys.path.append(utils_dirname)
-    from dataset_walker import dataset_walker
-    list_dir = os.path.join(install_path,'config')
-
-    parser = argparse.ArgumentParser(description='Evaluate output from a belief tracker.')
-    parser.add_argument('--dataset', dest='dataset', action='store', metavar='DATASET', required=True,
-                        help='The dataset to analyze')
-    parser.add_argument('--dataroot',dest='dataroot',action='store', metavar='PATH', required=True,
-                        help='Will look for corpus in <destroot>/<dataset>/...')
-    parser.add_argument('--trackfile',dest='scorefile',action='store',metavar='JSON_FILE',required=True,
-                        help='File containing score JSON')
-    parser.add_argument('--scorefile',dest='csv',action='store',metavar='CSV_FILE',required=True,
-                        help='File to write with CSV scoring data')
-    parser.add_argument('--ontology',dest='ontology',action='store',metavar='JSON_FILE',required=True,
-                        help='JSON Ontology file')
-    parser.add_argument('--rocdump',dest='rocdump',action='store',metavar='FILE_STEM',
-                        help='If present, use this file stem to write out ROC plot data: filestem.<schedule>.<slot>.<type>.csv, where type is either roc (which contains the ROC curve coordinates) or scores (which contains the raw scores used to compute the ROC curves).')
-
-    args = parser.parse_args()
-
-    sessions = dataset_walker(args.dataset,dataroot=args.dataroot,labels=True)
-    tracker_output = json.load(open(args.scorefile))
-    ontology = json.load(open(args.ontology))
+    sessions = dataset_walker(dataset = dataset, dataroot = dataroot, labels=True)
+    tracker_output = tracker_output
+    ontology = ontology
     
     slots_informable  = list(ontology["informable"].keys())
     slots_requestable = ontology["requestable"]
-    
-    csvfile = open(args.csv,'w')
     
     # what stats are there?
     stats = []
@@ -78,6 +55,15 @@ def main(argv):
                      
     
     turn_counter = 0.0
+    
+    # EDIT START
+    temp_session_list = []
+    for tracker_session in tracker_output["sessions"]:
+        for session in sessions.session_list:
+            if session.split("/")[1] == tracker_session["session-id"]:
+                temp_session_list.append(session)
+    sessions.session_list = temp_session_list
+    # EDIT END
     
     for session_num, (session_tracker, session) in enumerate(zip(tracker_output['sessions'], sessions)):
         
@@ -234,31 +220,37 @@ def main(argv):
       except:
           traceback.print_exc(file=sys.stdout)
           print("While scoring " + str(session_id))
-    # output to csv
-    print(("state_component, stat, schedule, label_scheme, N, result"), file=csvfile)
     
+    scores_dict = {}
     for stat in stats:
         component, (schedule, label_scheme), stat_class = stat
+        component = component if len(component) == 2 else (component[0], None)
+        if component[0] == "all":
+            continue
         results = stat_class.results()
         for stat_subname, N, result in results:
-            if result == None :
-                result = "-"
-            else :
-                result = "%.7f"%result
-            print(( "%s, %s, %i, %s, %i, %s"%(".".join(component), stat_subname, schedule, label_scheme, N, result)), file=csvfile)
-        if isinstance(stat_class, Stat_ROC) and (args.rocdump):
-            rocfile = args.rocdump + '.schedule' + str(schedule) + str(label_scheme)+'.' + (".".join(component)) + '.roc.csv'
-            scoresfile = args.rocdump + '.schedule' + str(schedule) + str(label_scheme)+'.' + (".".join(component)) + '.scores.csv'
-            stat_class.DumpROCToFile(rocfile)
-            stat_class.DumpScoresToFile(scoresfile)
-        
-    print('basic,total_wall_time,,,,%s' % (tracker_output['wall-time']), file=csvfile)
-    print('basic,sessions,,,,%s' % (len(sessions)), file=csvfile)
-    print('basic,turns,,,,%i' % (int(turn_counter)), file=csvfile)
-    print('basic,wall_time_per_turn,,,,%s' % (tracker_output['wall-time'] / turn_counter), file=csvfile)
-    print('basic,dataset,,,,%s' % (tracker_output['dataset'] ), file=csvfile)
-
-    csvfile.close()
+            if (stat_subname != "acc") and (stat_subname != "l2"):
+                continue
+            if result != None:
+                result = np.around(result, decimals = 7)
+            if ((component[0] == "goal" and component[1] == "pricerange") or \
+                (component[0] == "goal" and component[1] == "area") or \
+                (component[0] == "goal" and component[1] == "name") or \
+                (component[0] == "goal" and component[1] == "food") or \
+                (component[0] == "goal" and component[1] == "joint") or \
+                (component[0] == "requested" and component[1] == "all") or \
+                (component[0] == "method" and component[1] == None)):
+                if (stat_subname == "acc"):
+                    if component[1] == None:
+                        scores_dict["{}_accuracy".format(component[0])] = result
+                    else:
+                        scores_dict["{}_{}_accuracy".format(component[0], component[1])] = result
+                if (stat_subname == "l2"):
+                    if component[1] == None:
+                        scores_dict["{}_l2".format(component[0])] = result
+                    else:
+                        scores_dict["{}_{}_l2".format(component[0], component[1])] = result
+    return scores_dict
     
 
 
@@ -617,10 +609,3 @@ def tophyp_independent(dists) :
             top_hyp[slot] = top
         top_score *= score
     return (top_hyp, top_score)
-        
-
-            
-
-if (__name__ == '__main__'):
-    main(sys.argv)
-
