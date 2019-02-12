@@ -54,8 +54,6 @@ def compute_score(dataset, dataroot, tracker_output, ontology):
                         stats.append((('all',), (schedule, label_scheme), stat_class()))
                      
     
-    turn_counter = 0.0
-    
     # EDIT START
     temp_session_list = []
     for tracker_session in tracker_output["sessions"]:
@@ -82,8 +80,16 @@ def compute_score(dataset, dataroot, tracker_output, ontology):
         goal_labels_b, method_labels_b = misc.LabelsB(session, ontology)
         method_schedule_2 = False # whether schedule 2 is active for method
         
-        for turn_num, ((log_turn,label_turn),_tracker_turn) in enumerate(zip(session,session_tracker['turns'])):
-            turn_counter += 1.0
+        session_turns = []
+        for (log_turn,label_turn) in session:
+            session_turns.append((log_turn,label_turn))
+        
+        for _tracker_turn in session_tracker['turns']:
+            
+            turn_num = _tracker_turn["num"]
+            
+            (log_turn, label_turn) = session_turns[turn_num]
+            
             S_new = misc.S(log_turn, ontology)
             
             for slot in S_new :
