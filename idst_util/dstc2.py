@@ -72,7 +72,11 @@ def check(path = "."):
     logging.info("Done!")
 
     
-def extract_raw_features(data_directory, flist, ontology, data_augmentation = False, tokenize_slot_element = False, weight = 0.0):
+def extract_raw_features(data_directory, flist, ontology, only_transcript = False, data_augmentation = False, tokenize_slot_element = False, weight = 0.0):
+    
+    if only_transcript:
+        assert not data_augmentation
+    
     X = []
     Y = []
     for dialog_path in tqdm_notebook(flist, total = len(flist)):
@@ -126,14 +130,19 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
                             else:
                                 X_dialog_turn["system"].append((slot_element, weight))
             
-            # LecTrack: 3.2.1 Including Transcriptions in Training Data
-            # X_turn: asr-hyps
-            asr_hyps = log_turn["input"]["live"]["asr-hyps"]
-            asr_hyp = asr_hyps[0]["asr-hyp"]
-            asr_score = asr_hyps[0]["score"] # take ASR 1-best
-            for asr_token in nltk.word_tokenize(asr_hyp):
-                X_dialog_turn["user"].append((asr_token, asr_score))
-                
+            if not only_transcript:
+                # LecTrack: 3.2.1 Including ASR scores
+                # X_turn: asr-hyps
+                asr_hyps = log_turn["input"]["live"]["asr-hyps"]
+                asr_hyp = asr_hyps[0]["asr-hyp"]
+                asr_score = asr_hyps[0]["score"] # take ASR 1-best
+                for asr_token in nltk.word_tokenize(asr_hyp):
+                    X_dialog_turn["user"].append((asr_token, asr_score))
+            else:
+                transcription = label_turn["transcription"]
+                for transcription_token in nltk.word_tokenize(transcription):
+                    X_dialog_turn["user"].append((transcription_token, weight))
+            
             X_dialog["turns"].append(X_dialog_turn)
             
             # Y_turn
@@ -160,34 +169,36 @@ def extract_raw_features(data_directory, flist, ontology, data_augmentation = Fa
             
             assert len(X_dialog["turns"]) == len(Y_dialog["turns"])
             
-            # LecTrack: 3.2.2 Including Transcriptions in Training Data 
-            if data_augmentation:
-                X_dialog_turn_augmented = copy.deepcopy(X_dialog_turn)
-                Y_dialog_turn_augmented = copy.deepcopy(Y_dialog_turn)
-                #X_dialog_turn_augmented["user"] = [] # Uncomment this to erase user ASR hypothesis so far and keep only the true transcription
-                transcription = label_turn["transcription"]
-                for transcription_token in nltk.word_tokenize(transcription):
-                    X_dialog_turn_augmented["user"].append((transcription_token, weight))
-                X_dialog_augmented["turns"].append(X_dialog_turn_augmented)
-                Y_dialog_augmented["turns"].append(Y_dialog_turn_augmented)
-            
-            # LecTrack: 3.2.2 Including Transcriptions in Training Data
-            if data_augmentation:
-                assert len(X_dialog_augmented["turns"]) == len(Y_dialog_augmented["turns"])
-                assert len(X_dialog["turns"]) == len(X_dialog_augmented["turns"])
+            if not only_transcript:
+                # LecTrack: 3.2.2 Including Transcriptions in Training Data 
+                if data_augmentation:
+                    X_dialog_turn_augmented = copy.deepcopy(X_dialog_turn)
+                    Y_dialog_turn_augmented = copy.deepcopy(Y_dialog_turn)
+                    #X_dialog_turn_augmented["user"] = [] # Uncomment this to erase user ASR hypothesis so far and keep only the true transcription
+                    transcription = label_turn["transcription"]
+                    for transcription_token in nltk.word_tokenize(transcription):
+                        X_dialog_turn_augmented["user"].append((transcription_token, weight))
+                    X_dialog_augmented["turns"].append(X_dialog_turn_augmented)
+                    Y_dialog_augmented["turns"].append(Y_dialog_turn_augmented)
+
+                # LecTrack: 3.2.2 Including Transcriptions in Training Data
+                if data_augmentation:
+                    assert len(X_dialog_augmented["turns"]) == len(Y_dialog_augmented["turns"])
+                    assert len(X_dialog["turns"]) == len(X_dialog_augmented["turns"])
             
         X.append(X_dialog)
         Y.append(Y_dialog)
         
-        # LecTrack: 3.2.2 Including Transcriptions in Training Data
-        if data_augmentation:
-            X.append(X_dialog_augmented)
-            Y.append(Y_dialog_augmented)
+        if not only_transcript:
+            # LecTrack: 3.2.2 Including Transcriptions in Training Data
+            if data_augmentation:
+                X.append(X_dialog_augmented)
+                Y.append(Y_dialog_augmented)
         
     return X, Y        
 
 
-def retrieve_raw_datasets(train_data_augmentation = False):
+def retrieve_raw_datasets(only_transcript = False, train_data_augmentation = False):
     logging.info("+--------------------------------+")
     logging.info("|     Dialog State Tracker 2     |")
     logging.info("|       Dataset Retrieval        |")
@@ -219,6 +230,7 @@ def retrieve_raw_datasets(train_data_augmentation = False):
     X_train, Y_train = extract_raw_features(data_directory = traindev_data_directory,
                                             flist = train_flist,
                                             ontology = dstc2_ontology,
+                                            only_transcript = only_transcript,
                                             data_augmentation = train_data_augmentation)    
     
     # DEV
@@ -226,6 +238,7 @@ def retrieve_raw_datasets(train_data_augmentation = False):
     X_dev, Y_dev = extract_raw_features(data_directory = traindev_data_directory,
                                         flist = dev_flist,
                                         ontology = dstc2_ontology,
+                                        only_transcript = only_transcript,
                                         data_augmentation = False) # LecTrack: no augmentation should be done on dev
     
     # TEST
@@ -243,6 +256,7 @@ def retrieve_raw_datasets(train_data_augmentation = False):
     X_test, Y_test = extract_raw_features(data_directory = test_data_directory,
                                           flist = test_flist,
                                           ontology = dstc2_ontology,
+                                          only_transcript = only_transcript,
                                           data_augmentation = False) # LecTrack: no augmentation should be done on test
     
     logging.info("Done!")
