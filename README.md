@@ -1,30 +1,19 @@
-![iDST](./resources/images/iDST.png)
+# An Incremental Turn-Taking Model For Task-Oriented Dialog Systems
 
-### Description
+📍 Conference: INTERSPEECH 2019
+📝 Paper link: https://arxiv.org/abs/1905.11806
 
-A Dialog State Tracker (DST) is an important component in modern spoken dialog systems. In this repository. This repository provides an incremental version of an DST, which differs from classic turn-by-turn approaches by providing a word-by-word implementation.
+### Abstract
 
-### Requirements (from `pip freeze`)
-
-| requirement      | version    |
-|:-----------------|:-----------|
-| certifi          | 2018.11.29 |
-| pipenv           | 2018.11.26 |
-| virtualenv       | 16.1.0     |
-| virtualenv-clone | 0.4.0      |
+In a human-machine dialog scenario, deciding the appropriate time for the machine to take the turn is an open research problem. In contrast, humans engaged in conversations are able to timely decide when to interrupt the speaker for competitive or non-competitive reasons. In state-of-the-art turn-by-turn dialog systems the decision on the next dialog action is taken at the end of the utterance. In this paper, we propose a token-by-token prediction of the dialog state from incremental transcriptions of the user utterance. To identify the point of maximal understanding in an ongoing utterance, we a) implement an incremental Dialog State Tracker which is updated on a token basis (iDST) b) re-label the Dialog State Tracking Challenge 2 (DSTC2) dataset and c) adapt it to the incremental turn-taking experimental scenario. The re-labeling consists of assigning a binary value to each token in the user utterance that allows to identify the appropriate point for taking the turn. Finally, we implement an incremental Turn Taking Decider (iTTD) that is trained on these new labels for the turn-taking decision. We show that the proposed model can achieve a better performance compared to a deterministic handcrafted turn-taking algorithm.
 
 ### Repository contents
 
-* 📁 idst_util
+* `Pipfile` and `Pipfile.lock` are libraries requirements containers for the `pipenv` virtual environment (https://github.com/pypa/pipenv)
 
-	* `dstc_util.py`: checks if dstc2 dataset is in root folder, otherwise it downloads it. It provides also a raw features extractor
+* 📁 idst_ittd_util
+
+	* `dstc2.py`: checks if DSTC2 dataset is in the root folder, otherwise it downloads it. This script performs also a raw features extraction.
 	* `trivial.py`: logs some trivial strings
 
-* 📁 resources
-	
-	* 📁 images: some images for the Markdown files
-	* 📁 papers: relevant papers with summary
-
-* `[LecTrack]baseline.ipynb`: PyTorch implementation of LecTrack as baseline
-
-* `dstc2_data_analysis.ipynb`: data analysis of DSTC2 dataset
+* 📁 dstc2_scripts
