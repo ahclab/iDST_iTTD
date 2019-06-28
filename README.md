@@ -1,6 +1,6 @@
 # An Incremental Turn-Taking Model For Task-Oriented Dialog Systems
 
-📍 Conference: INTERSPEECH 2019
+📍 Conference: INTERSPEECH 2019  
 📝 Paper link: https://arxiv.org/abs/1905.11806
 
 ### Abstract
@@ -11,9 +11,19 @@ In a human-machine dialog scenario, deciding the appropriate time for the machin
 
 * `Pipfile` and `Pipfile.lock` are libraries requirements containers for the `pipenv` virtual environment (https://github.com/pypa/pipenv)
 
-* 📁 idst_ittd_util
+* 📁 **idst_ittd_util**
 
 	* `dstc2.py`: checks if DSTC2 dataset is in the root folder, otherwise it downloads it. This script performs also a raw features extraction.
 	* `trivial.py`: logs some trivial strings
 
-* 📁 dstc2_scripts
+* 📁 **dstc2_scripts**: this folder contains the scripts necessary for the DSTC2 dataset. For instance `score.py` is used to score the output of the Dialog State Tracker.  
+    **⚠️ NOTE**: Those scripts have been ported to `python3` from `python2` in order to be compliant with the python version used in the training scripts.  
+    **⚠️ IMPORTANT**: Some of them have been modified in order to allow a direct function call from the training scripts. Please substitute the **dstc2_scripts** folder downloaded by the `dstc2.py` script with this folder.
+
+* `[iDST_iTTD] data_analysis.ipynb`: data analysis script that provides some insights on the underlying data.
+
+* `[iDST_iTTD] model_All.ipynb`: this script trains a single multi-target model. 
+
+* `[iDST_iTTD] model_GMR.ipynb`: this script trains an ensemble of three models, namely: Goal (Pricerange, Area, Name, Food), Method and Requested.
+
+* `[iDST_iTTD] model_PANFRM.ipynb`: this script trains an ensemble of six models, namely: Pricerange, Area, Name, Food, Requested and Method.
