@@ -1,7 +1,10 @@
 # An Incremental Turn-Taking Model For Task-Oriented Dialog Systems
 
-📍 Conference: INTERSPEECH 2019  
-📝 Paper link: https://arxiv.org/abs/1905.11806
+✍️ Andrei C. Coman<sup>1</sup>, Koichiro Yoshino<sup>2</sup>, Yukitoshi Murase<sup>2</sup>, Satoshi Nakamura<sup>2</sup>, Giuseppe Riccardi<sup>1</sup>  
+🇮🇹 <sup>1</sup>Signals and Interactive Systems Lab, Department of Information Engineering and Computer Science, University of Trento, Italy  
+🇯🇵 <sup>2</sup>Augmented Human Communication Laboratory, Graduate School of Information Science, Nara Institute of Science and Technology, Japan  
+📍 INTERSPEECH 2019  
+📝 https://arxiv.org/abs/1905.11806
 
 ### Abstract
 
